@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verify OTP - Auth System</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body data-page="verify-otp">
+    <div class="auth-container">
+      <h1 class="auth-title">Verify your code</h1>
+      <p class="auth-subtitle">
+        Enter the 6-digit code sent to your email.
+      </p>
+
+      <form id="verify-otp-form" class="auth-form">
+        <div class="form-group">
+          <label class="form-label" for="verify-email">Email</label>
+          <input
+            type="email"
+            id="verify-email"
+            name="email"
+            class="form-input"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="otp">Verification code</label>
+          <input
+            type="text"
+            id="otp"
+            name="otp"
+            class="form-input otp-input"
+            placeholder="123456"
+            maxlength="6"
+            required
+          />
+        </div>
+
+        <div id="verify-otp-status" class="status-message"></div>
+
+        <button type="submit" class="primary-button">Verify code</button>
+      </form>
+
+      <div class="auth-footer">
+        Didn’t receive a code?
+        <span>Request a new one from the previous page.</span>
+      </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+  </body>
+</html>
+

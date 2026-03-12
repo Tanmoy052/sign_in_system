@@ -1,0 +1,8 @@
+{
+  "name": "auth-system-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for the Auth System",
+  "scripts": {
+    "dev": "npx -y http-server -p 3000"
+  }
+}

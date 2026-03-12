@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login - Auth System</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body data-page="login">
+    <div class="auth-container">
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-subtitle">
+        Sign in securely with your email and password.
+      </p>
+
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="password-container">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Your password"
+              required
+            />
+            <button type="button" class="password-toggle" id="toggle-password">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-status" class="status-message"></div>
+
+        <button type="submit" class="primary-button">Sign in</button>
+
+        <div class="link-row">
+          <a href="forgot-password.html" class="secondary-link"
+            >Forgot password?</a
+          >
+          <a href="signup.html" class="secondary-link">Create account</a>
+        </div>
+      </form>
+    </div>
+
+    <script src="js/auth.js"></script>
+  </body>
+</html>
