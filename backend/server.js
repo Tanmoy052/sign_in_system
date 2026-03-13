@@ -11,8 +11,21 @@ connectDB();
 
 const app = express();
 
-// Allow all origins in development so frontend works from any port
-app.use(cors());
+// Enable CORS for all origins and handle preflight requests
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+// Request logger for debugging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -23,4 +36,3 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-

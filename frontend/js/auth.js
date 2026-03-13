@@ -2,6 +2,17 @@
 
 const API_BASE_URL = "https://sign-in-system-wnqf.onrender.com/api/auth";
 
+// Ping backend on load to check connection
+(async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL.replace("/api/auth", "")}/`);
+    const text = await res.text();
+    console.log("Backend ping:", text);
+  } catch (err) {
+    console.error("Backend ping failed:", err);
+  }
+})();
+
 const showStatus = (elementId, message, isError = false) => {
   const el = document.getElementById(elementId);
   if (!el) return;
@@ -99,10 +110,10 @@ const initSignupPage = () => {
         )}&type=signup`;
       }, 400);
     } catch (err) {
-      console.error(err);
+      console.error("Signup error:", err);
       showStatus(
         "signup-status",
-        "Cannot reach server. Is the backend running? Open a terminal, run: cd backend && npm start",
+        "Cannot reach server. Please ensure the backend is running and CORS is correctly configured.",
         true,
       );
     }
