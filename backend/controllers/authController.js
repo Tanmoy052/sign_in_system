@@ -115,8 +115,18 @@ exports.verifyOtp = async (req, res) => {
         .json({ message: "No OTP found. Please sign up again." });
     }
 
+    if (user.otpAttempts >= 5) {
+      return res.status(429).json({
+        message: "Too many failed attempts. Please request a new OTP.",
+      });
+    }
+
     if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP." });
+      user.otpAttempts += 1;
+      await user.save();
+      return res.status(400).json({
+        message: `Invalid OTP. ${5 - user.otpAttempts} attempts remaining.`,
+      });
     }
 
     if (user.otpExpiry < new Date()) {
@@ -126,6 +136,7 @@ exports.verifyOtp = async (req, res) => {
     user.isVerified = true;
     user.otp = null;
     user.otpExpiry = null;
+    user.otpAttempts = 0;
     await user.save();
 
     res.status(200).json({ message: "Email verified successfully." });
@@ -223,8 +234,18 @@ exports.verifyResetOtp = async (req, res) => {
         .json({ message: "No OTP found. Please request again." });
     }
 
+    if (user.otpAttempts >= 5) {
+      return res.status(429).json({
+        message: "Too many failed attempts. Please request a new OTP.",
+      });
+    }
+
     if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP." });
+      user.otpAttempts += 1;
+      await user.save();
+      return res.status(400).json({
+        message: `Invalid OTP. ${5 - user.otpAttempts} attempts remaining.`,
+      });
     }
 
     if (user.otpExpiry < new Date()) {
@@ -232,6 +253,12 @@ exports.verifyResetOtp = async (req, res) => {
     }
 
     const resetToken = generateResetToken(user._id);
+
+    // Clear OTP but keep attempts for reset flow if needed (or clear it)
+    user.otp = null;
+    user.otpExpiry = null;
+    user.otpAttempts = 0;
+    await user.save();
 
     res.status(200).json({
       message: "OTP verified. You can now reset your password.",
@@ -300,6 +327,46 @@ exports.getDashboard = async (req, res) => {
   } catch (err) {
     console.error("Dashboard error:", err);
     res.status(500).json({ message: "Server error while loading dashboard." });
+  }
+};
+
+// ========== RESEND OTP ==========
+exports.resendOtp = async (req, res) => {
+  const { email, type } = req.body; // type: 'signup' or 'reset'
+  if (!email) return res.status(400).json({ message: "Email is required." });
+
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(400).json({ message: "User not found." });
+
+    // If signup and already verified, no need to resend
+    if (type === "signup" && user.isVerified) {
+      return res.status(400).json({ message: "Email is already verified." });
+    }
+
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    user.otpAttempts = 0; // Reset attempts on resend
+    await user.save();
+
+    const subject =
+      type === "reset" ? "Password Reset OTP" : "Account Verification OTP";
+
+    // Send OTP in background
+    sendOTP(user.email, subject, otp).catch((err) => {
+      console.error(`[Resend OTP] Background email error (${type}):`, err);
+    });
+
+    res.status(200).json({
+      message: `New OTP sent to ${user.email}.`,
+      email: user.email,
+    });
+  } catch (err) {
+    console.error("Resend OTP error:", err);
+    res.status(500).json({ message: "Server error during OTP resend." });
   }
 };
 

@@ -4,12 +4,26 @@ dotenv.config();
 
 const express = require("express");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 
 connectDB();
 
 const app = express();
+
+// Rate limiting to prevent brute force and spam
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    message:
+      "Too many requests from this IP, please try again after 15 minutes",
+  },
+});
+
+// Apply rate limiter to all auth routes
+app.use("/api/auth", limiter);
 
 // Allow all origins for debugging and ensure preflight is handled
 app.use(

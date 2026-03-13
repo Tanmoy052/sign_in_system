@@ -14,9 +14,9 @@ router.post(
     body("email").isEmail().withMessage("Valid email is required."),
     body("password")
       .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters.")
+      .withMessage("Password must be at least 6 characters."),
   ],
-  authController.signup
+  authController.signup,
 );
 
 // POST /api/auth/verify-otp
@@ -27,9 +27,9 @@ router.post(
   "/login",
   [
     body("email").isEmail().withMessage("Valid email is required."),
-    body("password").notEmpty().withMessage("Password is required.")
+    body("password").notEmpty().withMessage("Password is required."),
   ],
-  authController.login
+  authController.login,
 );
 
 // POST /api/auth/forgot-password
@@ -37,6 +37,9 @@ router.post("/forgot-password", authController.forgotPassword);
 
 // POST /api/auth/verify-reset-otp
 router.post("/verify-reset-otp", authController.verifyResetOtp);
+
+// POST /api/auth/resend-otp
+router.post("/resend-otp", authController.resendOtp);
 
 // POST /api/auth/reset-password
 router.post("/reset-password", authController.resetPassword);
@@ -53,4 +56,3 @@ router.get("/test", (req, res) => {
 router.post("/test-email", authController.testEmail);
 
 module.exports = router;
-
