@@ -9,7 +9,7 @@ const sendOTP = async (email, subject, otp) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "Auth System <onboarding@resend.dev>",
+      from: "Auth System <noreply.support.login@gmail.com>",
       to: email,
       subject: subject,
       text: text,
