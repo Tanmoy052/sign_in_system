@@ -34,21 +34,26 @@ exports.signup = async (req, res) => {
   }
 
   const { username, email, password } = req.body;
+  console.log(`[Signup Request] Username: ${username}, Email: ${email}`);
 
   try {
+    console.log("Checking if user exists...");
     let user = await User.findOne({ email: email.toLowerCase() });
 
     if (user && user.isVerified) {
+      console.log("User already exists and is verified.");
       return res
         .status(400)
         .json({ message: "An account with this email already exists." });
     }
 
+    console.log("Hashing password...");
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     if (!user) {
+      console.log("Creating new user instance...");
       user = new User({
         username,
         email: email.toLowerCase(),
@@ -58,15 +63,19 @@ exports.signup = async (req, res) => {
         otpExpiry,
       });
     } else {
+      console.log("Updating existing unverified user...");
       user.username = username;
       user.password = hashedPassword;
       user.otp = otp;
       user.otpExpiry = otpExpiry;
     }
 
+    console.log("Saving user to database...");
     await user.save();
+    console.log("User saved successfully.");
 
     // --- Send OTP Email ---
+    console.log(`Attempting to send OTP email to ${user.email}...`);
     try {
       await sendOTP(user.email, "Account Verification OTP", otp);
     } catch (emailError) {
@@ -80,8 +89,12 @@ exports.signup = async (req, res) => {
       email: user.email,
     });
   } catch (err) {
-    console.error("Signup error:", err);
-    res.status(500).json({ message: "Server error during signup." });
+    console.error("Signup error details:", err);
+    res.status(500).json({
+      message: "Server error during signup.",
+      error: err.message,
+      stack: process.env.NODE_ENV === "production" ? null : err.stack,
+    });
   }
 };
 
