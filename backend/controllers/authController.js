@@ -66,7 +66,14 @@ exports.signup = async (req, res) => {
 
     await user.save();
 
-    await sendOTP(user.email, "Account Verification OTP", otp);
+    // --- Send OTP Email ---
+    try {
+      await sendOTP(user.email, "Account Verification OTP", otp);
+    } catch (emailError) {
+      console.error("CRITICAL: Failed to send OTP email.", emailError);
+      // We don't block the user from verifying later, but we log the error.
+      // For a real app, you might want a more robust retry mechanism.
+    }
 
     return res.status(201).json({
       message: "Signup successful. OTP sent to your email.",
