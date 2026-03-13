@@ -180,10 +180,72 @@ const initVerifyOtpPage = () => {
   const emailField = document.getElementById("verify-email");
   const emailFromQuery = getQueryParam("email");
   const type = getQueryParam("type") || "signup";
+  const resendBtn = document.getElementById("resend-otp-btn");
+  const resendTimer = document.getElementById("resend-timer");
 
   if (emailField && emailFromQuery) {
     emailField.value = emailFromQuery;
   }
+
+  // --- Resend Timer Logic ---
+  let timerSeconds = 60;
+  let timerInterval;
+
+  const startTimer = () => {
+    resendBtn.disabled = true;
+    timerSeconds = 60;
+    resendTimer.textContent = `(Wait ${timerSeconds}s)`;
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        resendBtn.disabled = false;
+        resendTimer.textContent = "";
+      } else {
+        resendTimer.textContent = `(Wait ${timerSeconds}s)`;
+      }
+    }, 1000);
+  };
+
+  // Start timer on load
+  startTimer();
+
+  resendBtn.addEventListener("click", async () => {
+    const email = emailField.value.trim();
+    if (!email) {
+      showStatus("verify-otp-status", "Email is required to resend OTP.", true);
+      return;
+    }
+
+    try {
+      resendBtn.disabled = true;
+      const res = await fetch(`${API_BASE_URL}/resend-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, type }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        showStatus(
+          "verify-otp-status",
+          data.message || "Failed to resend OTP.",
+          true,
+        );
+        resendBtn.disabled = false;
+        return;
+      }
+
+      showStatus("verify-otp-status", data.message || "New OTP sent!", false);
+      startTimer(); // Restart timer after successful resend
+    } catch (err) {
+      console.error(err);
+      showStatus("verify-otp-status", "Network error. Please try again.", true);
+      resendBtn.disabled = false;
+    }
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
