@@ -139,7 +139,12 @@ exports.verifyOtp = async (req, res) => {
     user.otpAttempts = 0;
     await user.save();
 
-    res.status(200).json({ message: "Email verified successfully." });
+    const token = generateAuthToken(user);
+
+    res.status(200).json({
+      message: "Email verified successfully.",
+      token,
+    });
   } catch (err) {
     console.error("Verify OTP error:", err);
     res.status(500).json({ message: "Server error during OTP verification." });
