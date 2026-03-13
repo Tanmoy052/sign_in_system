@@ -3,19 +3,13 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  pool: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
-  debug: true,
-  logger: true,
 });
 
-// Verify the transporter connection on startup
+// Verify the transporter connection on startup with a timeout
 transporter.verify(function (error, success) {
   if (error) {
     console.error("[Email Service] Connection error:", error);
