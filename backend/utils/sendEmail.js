@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Verify the transporter connection on startup with a timeout
+// Verify the transporter connection on startup
 transporter.verify(function (error, success) {
   if (error) {
     console.error("[Email Service] Connection error:", error);
