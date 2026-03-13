@@ -11,14 +11,24 @@ connectDB();
 
 const app = express();
 
-// Configure CORS to allow requests from the Vercel frontend
-const corsOptions = {
-  origin: "https://signin-portal.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+// Allow all origins for debugging and ensure preflight is handled
+app.use(
+  cors({
+    origin: true, // This will reflect the Origin header back
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200,
+  }),
+);
+
+// Request logger to see all incoming requests in Render logs
+app.use((req, res, next) => {
+  console.log(
+    `[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.get("Origin")}`,
+  );
+  next();
+});
 
 app.use(express.json());
 
