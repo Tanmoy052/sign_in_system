@@ -1,40 +1,41 @@
 // backend/utils/sendEmail.js
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-// Verify the transporter connection on startup
-transporter.verify(function (error, success) {
-  if (error) {
-    console.error("[Email Service] Connection error:", error);
-  } else {
-    console.log("[Email Service] Server is ready to send emails");
-  }
-});
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+} else {
+  console.warn(
+    "[Email Service] Warning: SENDGRID_API_KEY is not set in environment variables.",
+  );
+}
 
 const sendOTP = async (email, subject, otp) => {
-  console.log(`[Email Service] Attempting to send OTP to: ${email}`);
-  const text = `Your verification code is ${otp}. This code will expire in 5 minutes.`;
+  console.log(
+    `[Email Service] Attempting to send OTP via SendGrid to: ${email}`,
+  );
+
+  const msg = {
+    to: email,
+    from: "login System <noreply.support.login@gmail.com>", // Verified sender in SendGrid
+    subject: subject,
+    text: `Your verification code is ${otp}. This code will expire in 5 minutes.`,
+    html: `<strong>Your verification code is ${otp}</strong>. This code will expire in 5 minutes.`,
+  };
 
   try {
-    const info = await transporter.sendMail({
-      from: `"Auth System" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject,
-      text,
-    });
+    const response = await sgMail.send(msg);
     console.log(
-      `[Email Service] Success: OTP sent to ${email}. Message ID: ${info.messageId}`,
+      `[Email Service] Success: OTP sent via SendGrid API. Status Code: ${response[0].statusCode}`,
     );
-    return info;
+    return response;
   } catch (error) {
-    console.error(`[Email Service] Error sending email to ${email}:`, error);
+    console.error(
+      `[Email Service] Error sending email via SendGrid API to ${email}:`,
+      error,
+    );
+    if (error.response) {
+      console.error(error.response.body);
+    }
     throw error;
   }
 };
