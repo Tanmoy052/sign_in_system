@@ -74,18 +74,14 @@ exports.signup = async (req, res) => {
     await user.save();
     console.log("User saved successfully.");
 
-    // --- Send OTP Email (Wait for it to see the error on screen) ---
+    // --- Send OTP Email (Asynchronously in background for speed) ---
     console.log(`Attempting to send OTP email to ${user.email}...`);
-    try {
-      await sendOTP(user.email, "Account Verification OTP", otp);
-      console.log("Email sent successfully!");
-    } catch (emailError) {
-      console.error("CRITICAL: Email sending failed.", emailError);
-      return res.status(500).json({
-        message: "Account created, but failed to send email.",
-        error: emailError.message,
-      });
-    }
+    sendOTP(user.email, "Account Verification OTP", otp).catch((emailError) => {
+      console.error(
+        "CRITICAL: Failed to send OTP email in background.",
+        emailError,
+      );
+    });
 
     return res.status(201).json({
       message: "Signup successful. OTP sent to your email.",
