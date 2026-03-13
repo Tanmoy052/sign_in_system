@@ -299,3 +299,29 @@ exports.getDashboard = async (req, res) => {
     res.status(500).json({ message: "Server error while loading dashboard." });
   }
 };
+
+// ========== TEST EMAIL (DIAGNOSTICS) ==========
+exports.testEmail = async (req, res) => {
+  const { email } = req.body;
+  if (!email)
+    return res.status(400).json({ message: "Email is required to test." });
+
+  console.log(`[Diagnostic] Attempting to send a TEST email to: ${email}`);
+  try {
+    await sendOTP(email, "TEST EMAIL - Auth System", "123456");
+    res.status(200).json({
+      message:
+        "Test email sent successfully! Please check your Gmail (and Spam folder).",
+      config_used: {
+        user: process.env.EMAIL_USER ? "Present (Correct)" : "MISSING",
+        pass: process.env.EMAIL_PASS ? "Present (Correct)" : "MISSING",
+      },
+    });
+  } catch (err) {
+    console.error("[Diagnostic] Test email FAILED:", err);
+    res.status(500).json({
+      message: "Test email failed. Check Render logs for error details.",
+      error: err.message,
+    });
+  }
+};

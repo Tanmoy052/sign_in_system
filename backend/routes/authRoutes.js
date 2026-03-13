@@ -44,10 +44,13 @@ router.post("/reset-password", authController.resetPassword);
 // GET /api/auth/dashboard (protected)
 router.get("/dashboard", authMiddleware, authController.getDashboard);
 
-// ✅ Test route
+// ✅ Test routes
 router.get("/test", (req, res) => {
   res.json({ message: "Auth API is working!" });
 });
+
+// ✅ Test Email Route (Directly tests Gmail configuration)
+router.post("/test-email", authController.testEmail);
 
 module.exports = router;
 
