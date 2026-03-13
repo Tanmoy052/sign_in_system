@@ -1,5 +1,4 @@
-// frontend/js/auth.js
-
+// frontend/js/auth.js - Redeploy triggered: 2026-03-13 14:58
 const API_BASE_URL = "https://sign-in-system-wnqf.onrender.com/api/auth";
 
 // Ping backend on load to check connection
