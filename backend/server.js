@@ -12,6 +12,16 @@ connectDB();
 
 const app = express();
 
+// Configure CORS to allow requests from the Vercel frontend
+app.use(
+  cors({
+    origin: "https://signin-portal.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200,
+  }),
+);
+
 // Rate limiting to prevent brute force and spam
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -24,17 +34,6 @@ const limiter = rateLimit({
 
 // Apply rate limiter to all auth routes
 app.use("/api/auth", limiter);
-
-// Allow all origins for debugging and ensure preflight is handled
-app.use(
-  cors({
-    origin: true, // This will reflect the Origin header back
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 200,
-  }),
-);
 
 // Request logger to see all incoming requests in Render logs
 app.use((req, res, next) => {
