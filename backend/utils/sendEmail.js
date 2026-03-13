@@ -18,6 +18,15 @@ const transporter = nodemailer.createTransport({
   logger: true, // Log information to console
 });
 
+// Verify the transporter connection on startup
+transporter.verify(function (error, success) {
+  if (error) {
+    console.error("[Email Service] Connection error:", error);
+  } else {
+    console.log("[Email Service] Server is ready to send emails");
+  }
+});
+
 const sendOTP = async (email, subject, otp) => {
   console.log(`[Email Service] Attempting to send OTP to: ${email}`);
   const text = `Your verification code is ${otp}. This code will expire in 5 minutes.`;
