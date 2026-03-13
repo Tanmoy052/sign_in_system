@@ -191,7 +191,10 @@ exports.forgotPassword = async (req, res) => {
     user.otpExpiry = otpExpiry;
     await user.save();
 
-    await sendOTP(user.email, "Password Reset OTP", otp);
+    // Send OTP in background for faster response
+    sendOTP(user.email, "Password Reset OTP", otp).catch((err) => {
+      console.error("[Forgot Password] Background email error:", err);
+    });
 
     res.status(200).json({
       message: "Password reset OTP sent to your email.",
