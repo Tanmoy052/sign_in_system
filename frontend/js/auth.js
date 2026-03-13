@@ -1,6 +1,6 @@
 // frontend/js/auth.js
 
-const API_BASE_URL = "https://sign-in-system-wnqf.onrender.com/api/auth";
+const API_BASE_URL = "http://localhost:5001/api/auth";
 
 const showStatus = (elementId, message, isError = false) => {
   const el = document.getElementById(elementId);
