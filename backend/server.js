@@ -12,6 +12,9 @@ connectDB();
 
 const app = express();
 
+// Trust proxy is required for express-rate-limit to work correctly on Render/Vercel
+app.set("trust proxy", 1);
+
 // Configure CORS to allow requests from the Vercel frontend
 app.use(
   cors({
