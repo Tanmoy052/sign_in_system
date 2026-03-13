@@ -1,38 +1,23 @@
 // backend/utils/sendEmail.js
 const sgMail = require("@sendgrid/mail");
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-} else {
-  console.warn(
-    "[Email Service] Warning: SENDGRID_API_KEY is not set in environment variables.",
-  );
-}
+// Set the API key from environment variables (Render/Vercel)
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendOTP = async (email, subject, otp) => {
-  console.log(
-    `[Email Service] Attempting to send OTP via SendGrid to: ${email}`,
-  );
-
   const msg = {
     to: email,
-    from: "login System <noreply.support.login@gmail.com>", // Verified sender in SendGrid
-    subject: subject,
-    text: `Your verification code is ${otp}. This code will expire in 5 minutes.`,
-    html: `<strong>Your verification code is ${otp}</strong>. This code will expire in 5 minutes.`,
+    from: "login System <noreply.support.login@gmail.com>", // Your verified sender in SendGrid
+    subject: subject || "Your OTP Code",
+    text: `Your OTP is: ${otp}. It will expire in 5 minutes.`,
+    html: `<strong>Your OTP is: ${otp}</strong><p>It will expire in 5 minutes.</p>`,
   };
 
   try {
-    const response = await sgMail.send(msg);
-    console.log(
-      `[Email Service] Success: OTP sent via SendGrid API. Status Code: ${response[0].statusCode}`,
-    );
-    return response;
+    await sgMail.send(msg);
+    console.log(`[Email Service] OTP sent to ${email}`);
   } catch (error) {
-    console.error(
-      `[Email Service] Error sending email via SendGrid API to ${email}:`,
-      error,
-    );
+    console.error(`[Email Service] Error sending email to ${email}:`, error);
     if (error.response) {
       console.error(error.response.body);
     }
