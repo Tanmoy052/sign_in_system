@@ -5,6 +5,7 @@ const API_BASE_URL = "https://sign-in-system-wnqf.onrender.com/api/auth";
 // Ping backend on load to check connection
 (async () => {
   try {
+    console.log("Current page origin:", window.location.origin);
     const res = await fetch(`${API_BASE_URL.replace("/api/auth", "")}/`);
     const text = await res.text();
     console.log("Backend ping:", text);
