@@ -100,7 +100,13 @@ const initSignupPage = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        showStatus("signup-status", data.message || "Signup failed.", true);
+        showStatus(
+          "signup-status",
+          data.error
+            ? `${data.message} (${data.error})`
+            : data.message || "Signup failed.",
+          true,
+        );
         return;
       }
 
