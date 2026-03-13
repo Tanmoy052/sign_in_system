@@ -74,15 +74,14 @@ exports.signup = async (req, res) => {
     await user.save();
     console.log("User saved successfully.");
 
-    // --- Send OTP Email ---
+    // --- Send OTP Email (Asynchronously in background for speed) ---
     console.log(`Attempting to send OTP email to ${user.email}...`);
-    try {
-      await sendOTP(user.email, "Account Verification OTP", otp);
-    } catch (emailError) {
-      console.error("CRITICAL: Failed to send OTP email.", emailError);
-      // We don't block the user from verifying later, but we log the error.
-      // For a real app, you might want a more robust retry mechanism.
-    }
+    sendOTP(user.email, "Account Verification OTP", otp).catch((emailError) => {
+      console.error(
+        "CRITICAL: Failed to send OTP email in background.",
+        emailError,
+      );
+    });
 
     return res.status(201).json({
       message: "Signup successful. OTP sent to your email.",
