@@ -245,14 +245,18 @@ html {
 @media (max-width: 640px) {
   body {
     padding: 1rem;
-    align-items: flex-start;
-    padding-top: 2rem;
+    align-items: center; /* Center vertically if space allows */
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
   }
 
   .auth-container {
-    padding: 2rem 1.5rem;
+    padding: 2rem 1.25rem;
     border-radius: 1.5rem;
     max-width: 100%;
+    /* Ensure no horizontal overflow */
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .auth-title {
