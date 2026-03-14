@@ -1,27 +1,67 @@
-// backend/utils/sendEmail.js
+const nodemailer = require("nodemailer");
 const sgMail = require("@sendgrid/mail");
 
-// Set the API key from environment variables (Render/Vercel)
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const gmailTransporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  connectionTimeout: 5000,
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
+
 const sendOTP = async (email, subject, otp) => {
-  const msg = {
-    to: email,
-    from: "login System <noreply.support.login@gmail.com>", // Your verified sender in SendGrid
-    subject: subject || "Your OTP Code",
-    text: `Your OTP is: ${otp}. It will expire in 5 minutes.`,
-    html: `<strong>Your OTP is: ${otp}</strong><p>It will expire in 5 minutes.</p>`,
-  };
+  const textMessage = `
+Hello,
+
+Your verification code is: ${otp}
+
+This code will expire in 5 minutes.
+
+Login System Security Team
+`;
+
+  const htmlMessage = `
+  <div style="font-family:Arial">
+    <h2>Login System Verification</h2>
+    <p>Your OTP:</p>
+    <h1>${otp}</h1>
+    <p>This code expires in 5 minutes.</p>
+  </div>
+  `;
 
   try {
-    await sgMail.send(msg);
-    console.log(`[Email Service] OTP sent to ${email}`);
-  } catch (error) {
-    console.error(`[Email Service] Error sending email to ${email}:`, error);
-    if (error.response) {
-      console.error(error.response.body);
+    await gmailTransporter.sendMail({
+      from: `Login System <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: subject || "Your Verification Code",
+      text: textMessage,
+      html: htmlMessage,
+    });
+
+    console.log("Email sent via Gmail SMTP");
+    return;
+  } catch (gmailError) {
+    console.log("Gmail failed, switching to SendGrid");
+
+    try {
+      await sgMail.send({
+        to: email,
+        from: `Login System <${process.env.GMAIL_USER}>`,
+        subject: subject || "Your Verification Code",
+        text: textMessage,
+        html: htmlMessage,
+      });
+
+      console.log("Email sent via SendGrid");
+    } catch (sendgridError) {
+      console.error("Both Gmail and SendGrid failed:", sendgridError);
+      throw sendgridError;
     }
-    throw error;
   }
 };
 

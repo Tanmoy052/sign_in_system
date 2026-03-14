@@ -15,10 +15,23 @@ const app = express();
 // Trust proxy is required for express-rate-limit to work correctly on Render/Vercel
 app.set("trust proxy", 1);
 
-// Configure CORS to allow requests from the Vercel frontend
+// Configure CORS to allow requests from the Vercel frontend and local development
+const allowedOrigins = [
+  "https://signin-portal.vercel.app",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000"
+];
+
 app.use(
   cors({
-    origin: "https://signin-portal.vercel.app",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error("CORS policy violation"), false);
+      }
+      return callback(null, true);
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 200,
