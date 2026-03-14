@@ -1,122 +1,107 @@
 /* frontend/css/style.css */
 
+:root {
+  --primary-gradient: linear-gradient(135deg, #4f46e5, #06b6d4);
+  --bg-dark: #020617;
+  --bg-card: rgba(15, 23, 42, 0.75);
+  --text-main: #e5e7eb;
+  --text-muted: #9ca3af;
+  --border-color: rgba(148, 163, 184, 0.25);
+  --focus-ring: rgba(99, 102, 241, 0.6);
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent; /* Clean touch on mobile */
 }
 
 body {
   font-family:
+    "Inter",
     system-ui,
     -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
     sans-serif;
   min-height: 100vh;
+  min-height: -webkit-fill-available; /* Fix for mobile Safari height */
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at top, #1f2937, #020617);
-  color: #e5e7eb;
+  background: radial-gradient(circle at top, #1f2937, var(--bg-dark));
+  color: var(--text-main);
+  line-height: 1.5;
+  padding: 1.25rem;
+}
+
+html {
+  height: -webkit-fill-available;
 }
 
 .auth-container {
   width: 100%;
-  max-width: 420px;
-  padding: 2.5rem 2.25rem;
-  border-radius: 1.5rem;
-  background: rgba(15, 23, 42, 0.75);
+  max-width: 440px;
+  padding: 2.5rem 2rem;
+  border-radius: 1.75rem;
+  background: var(--bg-card);
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(148, 163, 184, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px); /* Safari support */
-  border: 1px solid rgba(148, 163, 184, 0.35);
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--border-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
 }
 
+/* Header Typography */
 .auth-title {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+  text-align: center;
 }
 
 .auth-subtitle {
-  font-size: 0.9rem;
-  color: #9ca3af;
-  margin-bottom: 1.8rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
+/* Form Layout */
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  position: relative;
-}
-
-.password-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-container .form-input {
-  width: 100%;
-  padding-right: 2.8rem;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 0.8rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  padding: 0.4rem;
-  border-radius: 0.4rem;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
-}
-
-.password-toggle:hover {
-  color: #e5e7eb;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.password-toggle svg {
-  width: 1.2rem;
-  height: 1.2rem;
+  gap: 0.5rem;
 }
 
 .form-label {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: #d1d5db;
+  padding-left: 0.25rem;
 }
 
+/* Inputs */
 .form-input {
-  padding: 0.7rem 0.9rem;
-  border-radius: 0.7rem;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e5e7eb;
-  font-size: 0.9rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  font-size: 1rem; /* Better for mobile, prevents auto-zoom */
   outline: none;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .form-input::placeholder {
@@ -125,222 +110,222 @@ body {
 
 .form-input:focus {
   border-color: #6366f1;
-  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.6);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
   background: rgba(15, 23, 42, 0.95);
 }
 
-.primary-button {
-  margin-top: 0.5rem;
-  padding: 0.8rem 1rem;
-  border-radius: 999px;
+/* Password Field */
+.password-container {
+  position: relative;
+}
+
+.password-container .form-input {
+  padding-right: 3rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.95rem;
+  padding: 0.5rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #fff;
+}
+
+.password-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Buttons */
+.primary-button {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
   font-weight: 600;
-  color: #e5e7eb;
-  background: linear-gradient(135deg, #4f46e5, #06b6d4);
-  box-shadow:
-    0 12px 25px rgba(59, 130, 246, 0.45),
-    0 0 0 1px rgba(191, 219, 254, 0.3);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    filter 0.15s ease;
+  color: #fff;
+  background: var(--primary-gradient);
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+  transition: all 0.2s ease;
 }
 
 .primary-button:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow:
-    0 15px 30px rgba(59, 130, 246, 0.55),
-    0 0 0 1px rgba(191, 219, 254, 0.5);
+  filter: brightness(1.1);
+  box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.5);
 }
 
 .primary-button:active {
   transform: translateY(0);
-  box-shadow:
-    0 8px 15px rgba(59, 130, 246, 0.4),
-    0 0 0 1px rgba(191, 219, 254, 0.45);
 }
 
-.secondary-link {
-  font-size: 0.85rem;
-  color: #a5b4fc;
-  text-decoration: none;
-  transition:
-    color 0.15s ease,
-    text-shadow 0.15s ease;
-}
-
-.secondary-link:hover {
-  color: #c4b5fd;
-  text-shadow: 0 0 8px rgba(199, 210, 254, 0.7);
-}
-
-.auth-footer {
-  margin-top: 1.8rem;
-  font-size: 0.85rem;
-  color: #9ca3af;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: #3b82f6;
-  text-decoration: none;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: color 0.15s ease;
-  padding: 0;
-}
-
-.link-button:hover:not(:disabled) {
-  color: #60a5fa;
-  text-decoration: underline;
-}
-
-.link-button:disabled {
-  color: #6b7280;
-  cursor: not-allowed;
-  text-decoration: none;
-}
-
-.resend-timer {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
+/* Links */
 .link-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.3rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
-.status-message {
-  margin-top: 0.6rem;
-  font-size: 0.85rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid transparent;
-  display: none;
+.secondary-link {
+  font-size: 0.875rem;
+  color: #a5b4fc;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-.status-message.visible {
-  display: block;
+.secondary-link:hover {
+  color: #c4b5fd;
 }
 
-.status-message.success {
-  background: rgba(22, 163, 74, 0.12);
-  border-color: rgba(22, 163, 74, 0.5);
-  color: #bbf7d0;
-}
-
-.status-message.error {
-  background: rgba(220, 38, 38, 0.12);
-  border-color: rgba(239, 68, 68, 0.55);
-  color: #fecaca;
-}
-
-.otp-input {
-  letter-spacing: 0.5em;
+.auth-footer {
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
   text-align: center;
 }
 
+/* Status Messages */
+.status-message {
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  display: none;
+  border: 1px solid transparent;
+}
+
+.status-message.visible {
+  display: flex;
+  align-items: center;
+}
+
+.status-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.status-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Dashboard Specific */
 .dashboard-content {
   text-align: center;
 }
 
 .dashboard-title {
-  font-size: 1.7rem;
-  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
 }
 
-.dashboard-subtitle {
-  font-size: 0.95rem;
-  color: #9ca3af;
-  margin-bottom: 1.8rem;
-}
+/* Mobile-First Optimizations */
+@media (max-width: 640px) {
+  body {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
 
-/* Responsive Adjustments */
-
-/* Tablets (Portrait) */
-@media (max-width: 768px) {
   .auth-container {
-    max-width: 400px;
-    padding: 2.2rem 1.8rem;
-    margin: 1.5rem;
+    padding: 2rem 1.5rem;
+    border-radius: 1.5rem;
+    max-width: 100%;
   }
 
   .auth-title {
     font-size: 1.5rem;
   }
 
-  .dashboard-title {
-    font-size: 1.6rem;
-  }
-}
-
-/* Mobile Phones (Large) */
-@media (max-width: 480px) {
-  body {
-    padding: 1rem;
-    align-items: flex-start; /* Better for scrolling on small screens */
-    padding-top: 10vh;
-  }
-
-  .auth-container {
-    padding: 1.8rem 1.4rem;
-    border-radius: 1.25rem;
-    margin: 0; /* Let body padding handle it */
-  }
-
-  .auth-title {
-    font-size: 1.4rem;
-  }
-
-  .auth-subtitle, .dashboard-subtitle {
-    font-size: 0.85rem;
+  .auth-subtitle {
+    font-size: 0.875rem;
     margin-bottom: 1.5rem;
   }
 
-  .form-input {
-    padding: 0.65rem 0.8rem;
-    font-size: 16px; /* Prevents auto-zoom on iOS */
-  }
-
-  .primary-button {
-    padding: 0.75rem 1rem;
-  }
-
+  /* Full width links on mobile for better touch area */
   .link-row {
     flex-direction: column;
-    gap: 0.8rem;
-    align-items: center;
+    text-align: center;
+  }
+
+  .secondary-link {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+  }
+
+  /* Larger touch targets for mobile */
+  .primary-button {
+    padding: 1.125rem;
+  }
+
+  .form-input {
+    padding: 1rem;
   }
 }
 
-/* Mobile Phones (Small) */
+/* Handling very small devices */
 @media (max-width: 360px) {
   .auth-container {
-    padding: 1.5rem 1.1rem;
-  }
-
-  .auth-title {
-    font-size: 1.3rem;
+    padding: 1.5rem 1rem;
   }
 }
 
-/* Laptop / Desktop (Height based adjustment) */
-@media (max-height: 600px) {
+/* Short screens optimization */
+@media (max-height: 700px) {
   body {
     align-items: flex-start;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
   }
+}
+
+.otp-input {
+  letter-spacing: 0.5em;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.link-button:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.resend-timer {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-left: 0.25rem;
 }
