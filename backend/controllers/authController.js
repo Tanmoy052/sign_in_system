@@ -30,7 +30,11 @@ const generateResetToken = (userId) => {
 exports.signup = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    const errorMsg = errors
+      .array()
+      .map((err) => err.msg)
+      .join(" ");
+    return res.status(400).json({ message: errorMsg });
   }
 
   const { username, email, password } = req.body;
@@ -68,6 +72,7 @@ exports.signup = async (req, res) => {
       user.password = hashedPassword;
       user.otp = otp;
       user.otpExpiry = otpExpiry;
+      user.otpAttempts = 0;
     }
 
     console.log("Saving user to database...");
@@ -155,7 +160,11 @@ exports.verifyOtp = async (req, res) => {
 exports.login = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    const errorMsg = errors
+      .array()
+      .map((err) => err.msg)
+      .join(" ");
+    return res.status(400).json({ message: errorMsg });
   }
 
   const { email, password } = req.body;
@@ -205,6 +214,7 @@ exports.forgotPassword = async (req, res) => {
 
     user.otp = otp;
     user.otpExpiry = otpExpiry;
+    user.otpAttempts = 0;
     await user.save();
 
     // Send OTP in background for faster response
@@ -388,8 +398,8 @@ exports.testEmail = async (req, res) => {
       message:
         "Test email sent successfully! Please check your Gmail (and Spam folder).",
       config_used: {
-        user: process.env.EMAIL_USER ? "Present (Correct)" : "MISSING",
-        pass: process.env.EMAIL_PASS ? "Present (Correct)" : "MISSING",
+        user: process.env.GMAIL_USER ? "Present (Correct)" : "MISSING",
+        pass: process.env.GMAIL_PASS ? "Present (Correct)" : "MISSING",
       },
     });
   } catch (err) {

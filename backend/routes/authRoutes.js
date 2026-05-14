@@ -10,7 +10,10 @@ const router = express.Router();
 router.post(
   "/signup",
   [
-    body("username").trim().notEmpty().withMessage("Username is required."),
+    body("username")
+      .trim()
+      .isLength({ min: 3 })
+      .withMessage("Username must be at least 3 characters."),
     body("email").isEmail().withMessage("Valid email is required."),
     body("password")
       .isLength({ min: 6 })

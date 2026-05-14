@@ -19,7 +19,7 @@ app.set("trust proxy", 1);
 const allowedOrigins = [
   "https://signin-portal.vercel.app",
   "http://localhost:3000",
-  "http://127.0.0.1:3000"
+  "http://127.0.0.1:3000",
 ];
 
 app.use(
@@ -62,6 +62,15 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(`[Error] ${err.stack}`);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal Server Error",
+    error: process.env.NODE_ENV === "production" ? {} : err,
+  });
+});
 
 app.get("/", (req, res) => {
   res.send("Auth API running");
