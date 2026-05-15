@@ -396,10 +396,9 @@ exports.testEmail = async (req, res) => {
     await sendOTP(email, "TEST EMAIL - Auth System", "123456");
     res.status(200).json({
       message:
-        "Test email sent successfully! Please check your Gmail (and Spam folder).",
+        "Test email sent successfully! Please check your email (and Spam folder).",
       config_used: {
-        user: process.env.GMAIL_USER ? "Present (Correct)" : "MISSING",
-        pass: process.env.GMAIL_PASS ? "Present (Correct)" : "MISSING",
+        resend_api_key: process.env.RESEND_API_KEY ? "Present" : "MISSING",
       },
     });
   } catch (err) {
