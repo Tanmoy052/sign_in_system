@@ -6,7 +6,11 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// POST /api/auth/signup
+/**
+ * PUBLIC ROUTES
+ */
+
+// 1. Signup
 router.post(
   "/signup",
   [
@@ -22,10 +26,12 @@ router.post(
   authController.signup,
 );
 
-// POST /api/auth/verify-otp
+// 2. OTP Verification (Signup & Reset)
 router.post("/verify-otp", authController.verifyOtp);
+router.post("/verify-reset-otp", authController.verifyResetOtp);
+router.post("/resend-otp", authController.resendOtp);
 
-// POST /api/auth/login
+// 3. Login
 router.post(
   "/login",
   [
@@ -35,27 +41,22 @@ router.post(
   authController.login,
 );
 
-// POST /api/auth/forgot-password
+// 4. Password Recovery
 router.post("/forgot-password", authController.forgotPassword);
-
-// POST /api/auth/verify-reset-otp
-router.post("/verify-reset-otp", authController.verifyResetOtp);
-
-// POST /api/auth/resend-otp
-router.post("/resend-otp", authController.resendOtp);
-
-// POST /api/auth/reset-password
 router.post("/reset-password", authController.resetPassword);
 
-// GET /api/auth/dashboard (protected)
+/**
+ * PROTECTED ROUTES
+ */
 router.get("/dashboard", authMiddleware, authController.getDashboard);
 
-// ✅ Test routes
+/**
+ * DIAGNOSTICS & SYSTEM
+ */
 router.get("/test", (req, res) => {
-  res.json({ message: "Auth API is working!" });
+  res.json({ status: "success", message: "Auth API is working!" });
 });
 
-// ✅ Test Email Route (Directly tests Gmail configuration)
 router.post("/test-email", authController.testEmail);
 
 module.exports = router;
