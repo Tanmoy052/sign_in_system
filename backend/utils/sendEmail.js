@@ -1,67 +1,49 @@
-const nodemailer = require("nodemailer");
-const sgMail = require("@sendgrid/mail");
+const { Resend } = require("resend");
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const gmailTransporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  connectionTimeout: 5000,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
-
+/**
+ * Sends an OTP email using Resend.
+ * @param {string} email - Recipient email address
+ * @param {string} subject - Email subject
+ * @param {string} otp - The 6-digit code
+ */
 const sendOTP = async (email, subject, otp) => {
-  const textMessage = `
-Hello,
-
-Your verification code is: ${otp}
-
-This code will expire in 5 minutes.
-
-Login System Security Team
-`;
-
-  const htmlMessage = `
-  <div style="font-family:Arial">
-    <h2>Login System Verification</h2>
-    <p>Your OTP:</p>
-    <h1>${otp}</h1>
-    <p>This code expires in 5 minutes.</p>
-  </div>
-  `;
-
   try {
-    await gmailTransporter.sendMail({
-      from: `Login System <${process.env.GMAIL_USER}>`,
+    if (!process.env.RESEND_API_KEY) {
+      console.error("CRITICAL: RESEND_API_KEY is missing from environment variables.");
+      throw new Error("Email configuration missing");
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: "Auth System <onboarding@resend.dev>",
       to: email,
       subject: subject || "Your Verification Code",
-      text: textMessage,
-      html: htmlMessage,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
+          <h2 style="color: #4f46e5; text-align: center;">Login System Verification</h2>
+          <p style="font-size: 16px; color: #374151;">Hello,</p>
+          <p style="font-size: 16px; color: #374151;">Your verification code is:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <h1 style="font-size: 48px; letter-spacing: 8px; color: #111827; background: #f3f4f6; padding: 20px; border-radius: 8px; display: inline-block;">${otp}</h1>
+          </div>
+          <p style="font-size: 14px; color: #6b7280; text-align: center;">This code will expire in 5 minutes.</p>
+          <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+          <p style="font-size: 12px; color: #9ca3af; text-align: center;">Login System Security Team</p>
+        </div>
+      `,
     });
 
-    console.log("Email sent via Gmail SMTP");
-    return;
-  } catch (gmailError) {
-    console.log("Gmail failed, switching to SendGrid");
-
-    try {
-      await sgMail.send({
-        to: email,
-        from: `Login System <${process.env.GMAIL_USER}>`,
-        subject: subject || "Your Verification Code",
-        text: textMessage,
-        html: htmlMessage,
-      });
-
-      console.log("Email sent via SendGrid");
-    } catch (sendgridError) {
-      console.error("Both Gmail and SendGrid failed:", sendgridError);
-      throw sendgridError;
+    if (error) {
+      console.error("Resend API Error:", error);
+      throw error;
     }
+
+    console.log("Email sent successfully via Resend:", data.id);
+    return data;
+  } catch (err) {
+    console.error("Failed to send email via Resend:", err.message);
+    throw err;
   }
 };
 
