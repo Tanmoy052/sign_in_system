@@ -349,7 +349,7 @@ exports.testEmail = catchAsync(async (req, res, next) => {
     status: "success",
     message: "Test email dispatched successfully.",
     config: {
-      resend_key: process.env.RESEND_API_KEY ? "CONFIGURED" : "MISSING",
+      brevo_api_key: process.env.BREVO_API_KEY ? "CONFIGURED" : "MISSING",
     },
   });
 });
