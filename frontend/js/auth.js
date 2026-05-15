@@ -10,6 +10,16 @@ const API_BASE_URL =
     ? "http://127.0.0.1:5001/api/auth"
     : "https://sign-in-system-wnqf.onrender.com/api/auth";
 
+// Automatically handle production vs development environment variables logic
+if (
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1"
+) {
+  console.log("[AuthClient] Running in Production mode.");
+} else {
+  console.log("[AuthClient] Running in Development mode.");
+}
+
 // --- Utility Functions ---
 
 const showStatus = (elementId, message, isError = false) => {
@@ -28,7 +38,8 @@ const clearStatus = (elementId) => {
   el.classList.remove("visible", "error", "success");
 };
 
-const getQueryParam = (name) => new URLSearchParams(window.location.search).get(name);
+const getQueryParam = (name) =>
+  new URLSearchParams(window.location.search).get(name);
 
 // Token Management
 const auth = {
@@ -62,8 +73,8 @@ const setupPasswordToggles = () => {
       const input = btn.closest(".password-container").querySelector("input");
       const isPassword = input.type === "password";
       input.type = isPassword ? "text" : "password";
-      
-      btn.innerHTML = isPassword 
+
+      btn.innerHTML = isPassword
         ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>`
         : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`;
     });
@@ -96,7 +107,10 @@ const initSignupPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Signup failed");
 
-      showStatus("signup-status", "Account created! Redirecting to verification...");
+      showStatus(
+        "signup-status",
+        "Account created! Redirecting to verification...",
+      );
       setTimeout(() => {
         window.location.href = `verify-otp.html?email=${encodeURIComponent(payload.email)}&type=signup`;
       }, 1500);
@@ -149,7 +163,7 @@ const initVerifyOtpPage = () => {
   const email = getQueryParam("email");
   const type = getQueryParam("type") || "signup";
   const resendBtn = document.getElementById("resend-otp-btn");
-  
+
   if (email) document.getElementById("verify-email").value = email;
 
   // Resend Timer
@@ -310,7 +324,7 @@ const initIndexPage = async () => {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-    
+
     if (!res.ok) {
       if (res.status === 401) {
         auth.removeToken();
@@ -320,11 +334,15 @@ const initIndexPage = async () => {
     }
 
     const { user } = data.data;
-    document.getElementById("dashboard-welcome").textContent = `Welcome, ${user.username}!`;
-    document.getElementById("dashboard-subtitle").textContent = `Registered Email: ${user.email}`;
-    document.getElementById("dashboard-status").textContent = "Your account is secure and verified.";
+    document.getElementById("dashboard-welcome").textContent =
+      `Welcome, ${user.username}!`;
+    document.getElementById("dashboard-subtitle").textContent =
+      `Registered Email: ${user.email}`;
+    document.getElementById("dashboard-status").textContent =
+      "Your account is secure and verified.";
   } catch (err) {
-    document.getElementById("dashboard-status").textContent = "Session expired. Please log in again.";
+    document.getElementById("dashboard-status").textContent =
+      "Session expired. Please log in again.";
     auth.removeToken();
     setTimeout(() => (window.location.href = "login.html"), 2000);
   }
@@ -334,11 +352,23 @@ const initIndexPage = async () => {
 document.addEventListener("DOMContentLoaded", () => {
   const page = document.body.dataset.page;
   switch (page) {
-    case "signup": initSignupPage(); break;
-    case "login": initLoginPage(); break;
-    case "verify-otp": initVerifyOtpPage(); break;
-    case "forgot-password": initForgotPasswordPage(); break;
-    case "reset-password": initResetPasswordPage(); break;
-    case "index": initIndexPage(); break;
+    case "signup":
+      initSignupPage();
+      break;
+    case "login":
+      initLoginPage();
+      break;
+    case "verify-otp":
+      initVerifyOtpPage();
+      break;
+    case "forgot-password":
+      initForgotPasswordPage();
+      break;
+    case "reset-password":
+      initResetPasswordPage();
+      break;
+    case "index":
+      initIndexPage();
+      break;
   }
 });

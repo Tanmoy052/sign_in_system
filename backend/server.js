@@ -77,7 +77,8 @@ const globalLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     status: 429,
-    message: "Too many requests from this IP, please try again after 15 minutes",
+    message:
+      "Too many requests from this IP, please try again after 15 minutes",
   },
 });
 app.use("/api", globalLimiter);
@@ -120,6 +121,16 @@ app.use("*", (req, res) => {
 app.use((err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
+
+  // Specialized logging for authentication and email errors
+  if (err.statusCode >= 500) {
+    console.error(`[CRITICAL ERROR] ${req.method} ${req.originalUrl}:`, err);
+  } else {
+    console.warn(
+      `[API WARNING] ${req.method} ${req.originalUrl}:`,
+      err.message,
+    );
+  }
 
   if (process.env.NODE_ENV === "development") {
     res.status(err.statusCode).json({

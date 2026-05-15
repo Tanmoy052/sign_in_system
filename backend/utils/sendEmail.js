@@ -10,24 +10,28 @@ const CONFIG = {
   SENDER_EMAIL: "noreply.support.login@gmail.com",
   SENDER_NAME: "Auth System",
   BRAND_COLOR: "#4f46e5",
-  MAX_RETRIES: 2,
-  RETRY_DELAY_MS: 1000,
+  MAX_RETRIES: 3, // Increased to 3 for better production reliability
+  RETRY_DELAY_MS: 1500, // Slightly longer delay
+  TIMEOUT_MS: 10000, // 10s timeout for API calls
 };
 
 // Validate API key on startup
 if (!process.env.BREVO_API_KEY) {
   console.error(
-    "❌ CRITICAL: BREVO_API_KEY is missing in environment variables.",
+    "❌ CRITICAL: BREVO_API_KEY is missing. Email service will fail.",
   );
-  process.exit(1);
+  // Don't exit process here to allow the server to still serve health checks,
+  // but the email service itself will throw errors on use.
 }
 
 // Initialize Brevo Client
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications["api-key"];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+let apiInstance = null;
+if (process.env.BREVO_API_KEY) {
+  const defaultClient = SibApiV3Sdk.ApiClient.instance;
+  const apiKey = defaultClient.authentications["api-key"];
+  apiKey.apiKey = process.env.BREVO_API_KEY;
+  apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+}
 
 /**
  * Creates a professional, responsive HTML template for emails.
@@ -42,7 +46,7 @@ const getBaseTemplate = ({ title, body, preheader = "" }) => `
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f9fafb; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
     .wrapper { width: 100%; table-layout: fixed; background-color: #f9fafb; padding-bottom: 40px; padding-top: 40px; }
-    .container { max-width: 600px; background-color: #ffffff; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .container { max-width: 600px; background-color: #ffffff; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #e5e7eb; }
     .header { background: linear-gradient(135deg, ${CONFIG.BRAND_COLOR}, #06b6d4); padding: 40px 20px; text-align: center; }
     .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em; }
     .content { padding: 40px; color: #374151; line-height: 1.6; }
@@ -71,15 +75,30 @@ const getBaseTemplate = ({ title, body, preheader = "" }) => `
 `;
 
 /**
- * Core email sender with retry logic.
+ * Core email sender with retry logic and timeout protection.
  */
 const executeMailSend = async (sendSmtpEmail, retryCount = 0) => {
+  if (!apiInstance) {
+    throw new Error("Brevo API instance not initialized. Check BREVO_API_KEY.");
+  }
+
   try {
-    return await apiInstance.sendTransacEmail(sendSmtpEmail);
+    // Add timeout protection
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Email API request timed out")),
+        CONFIG.TIMEOUT_MS,
+      ),
+    );
+
+    return await Promise.race([
+      apiInstance.sendTransacEmail(sendSmtpEmail),
+      timeoutPromise,
+    ]);
   } catch (err) {
     if (retryCount < CONFIG.MAX_RETRIES) {
       console.warn(
-        `⚠️ Brevo API Error (Attempt ${retryCount + 1}): ${err.message}. Retrying...`,
+        `⚠️ Brevo API Error (Attempt ${retryCount + 1}): ${err.message}. Retrying in ${CONFIG.RETRY_DELAY_MS}ms...`,
       );
       await new Promise((resolve) =>
         setTimeout(resolve, CONFIG.RETRY_DELAY_MS),

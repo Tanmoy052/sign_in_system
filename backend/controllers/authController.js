@@ -36,18 +36,21 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   if (user && user.isVerified) {
     return next(
-      new AppError("An account with this email already exists.", 400),
+      new AppError(
+        "An account with this email already exists. Please log in.",
+        400,
+      ),
     );
   }
 
   // 2. Prepare user data
   const hashedPassword = await bcrypt.hash(password, 12);
   const otp = generateOTP();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // Increased to 10 minutes
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
   if (!user) {
     user = await User.create({
-      username,
+      username: username.trim(),
       email: normalizedEmail,
       password: hashedPassword,
       isVerified: false,
@@ -55,8 +58,8 @@ exports.signup = catchAsync(async (req, res, next) => {
       otpExpiry,
     });
   } else {
-    // Update existing unverified user
-    user.username = username;
+    // Update existing unverified user (allows retrying signup if email was wrong or OTP failed)
+    user.username = username.trim();
     user.password = hashedPassword;
     user.otp = otp;
     user.otpExpiry = otpExpiry;
@@ -65,16 +68,16 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
 
   // 3. Send OTP (Background task)
-  sendOTP(user.email, otp, "Account Verification OTP").catch((err) => {
+  sendOTP(user.email, otp, "Verify Your Account").catch((err) => {
     console.error(
-      `[Email Error] Failed to send signup OTP to ${user.email}:`,
+      `[CRITICAL] Background signup email failed for ${user.email}:`,
       err.message,
     );
   });
 
   res.status(201).json({
     status: "success",
-    message: "Signup initiated. Please verify your email with the OTP sent.",
+    message: "Signup initiated. Verification OTP sent to your email.",
     data: { email: user.email },
   });
 });
@@ -106,7 +109,10 @@ exports.verifyOtp = catchAsync(async (req, res, next) => {
   // Check Expiry
   if (user.otpExpiry < new Date()) {
     return next(
-      new AppError("OTP has expired. Please request a new one.", 400),
+      new AppError(
+        "OTP has expired. Please request a new one by clicking Resend.",
+        400,
+      ),
     );
   }
 
@@ -114,9 +120,20 @@ exports.verifyOtp = catchAsync(async (req, res, next) => {
   if (user.otp !== otp) {
     user.otpAttempts += 1;
     await user.save();
+
+    const remaining = Math.max(0, 5 - user.otpAttempts);
+    if (remaining === 0) {
+      return next(
+        new AppError(
+          "Too many failed attempts. This OTP is now invalid. Please resend.",
+          429,
+        ),
+      );
+    }
+
     return next(
       new AppError(
-        `Invalid OTP. ${5 - user.otpAttempts} attempts remaining.`,
+        `Invalid verification code. ${remaining} attempts remaining.`,
         400,
       ),
     );
@@ -214,20 +231,34 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 exports.verifyResetOtp = catchAsync(async (req, res, next) => {
   const { email, otp } = req.body;
   if (!email || !otp) {
-    return next(new AppError("Email and OTP are required.", 400));
+    return next(new AppError("Email and verification code are required.", 400));
   }
 
   const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) return next(new AppError("User not found.", 404));
 
   if (!user.otp || !user.otpExpiry || user.otpExpiry < new Date()) {
-    return next(new AppError("OTP is invalid or has expired.", 400));
+    return next(
+      new AppError("Verification code is invalid or has expired.", 400),
+    );
+  }
+
+  // Brute force protection for reset OTP
+  if (user.otpAttempts >= 5) {
+    return next(
+      new AppError("Too many failed attempts. Please request a new code.", 429),
+    );
   }
 
   if (user.otp !== otp) {
     user.otpAttempts += 1;
     await user.save();
-    return next(new AppError("Invalid OTP.", 400));
+    return next(
+      new AppError(
+        `Invalid code. ${5 - user.otpAttempts} attempts remaining.`,
+        400,
+      ),
+    );
   }
 
   // Generate short-lived reset token
@@ -285,7 +316,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 // ========== DASHBOARD (PROTECTED) ==========
 exports.getDashboard = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  // Use projection to explicitly include/exclude fields
+  const user = await User.findById(req.user.id).select(
+    "-otp -otpExpiry -otpAttempts -__v",
+  );
 
   if (!user) return next(new AppError("User not found.", 404));
 
@@ -297,6 +331,7 @@ exports.getDashboard = catchAsync(async (req, res, next) => {
         username: user.username,
         email: user.email,
         isVerified: user.isVerified,
+        joinedAt: user.createdAt,
       },
     },
   });
