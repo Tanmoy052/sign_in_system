@@ -81,7 +81,7 @@ exports.signup = async (req, res) => {
 
     // --- Send OTP Email (Asynchronously in background for speed) ---
     console.log(`Attempting to send OTP email to ${user.email}...`);
-    sendOTP(user.email, "Account Verification OTP", otp).catch((emailError) => {
+    sendOTP(user.email, otp, "Account Verification OTP").catch((emailError) => {
       console.error(
         "CRITICAL: Failed to send OTP email in background.",
         emailError,
@@ -218,7 +218,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Send OTP in background for faster response
-    sendOTP(user.email, "Password Reset OTP", otp).catch((err) => {
+    sendOTP(user.email, otp, "Password Reset OTP").catch((err) => {
       console.error("[Forgot Password] Background email error:", err);
     });
 
@@ -371,7 +371,7 @@ exports.resendOtp = async (req, res) => {
       type === "reset" ? "Password Reset OTP" : "Account Verification OTP";
 
     // Send OTP in background
-    sendOTP(user.email, subject, otp).catch((err) => {
+    sendOTP(user.email, otp, subject).catch((err) => {
       console.error(`[Resend OTP] Background email error (${type}):`, err);
     });
 
@@ -393,7 +393,7 @@ exports.testEmail = async (req, res) => {
 
   console.log(`[Diagnostic] Attempting to send a TEST email to: ${email}`);
   try {
-    await sendOTP(email, "TEST EMAIL - Auth System", "123456");
+    await sendOTP(email, "123456", "TEST EMAIL - Auth System");
     res.status(200).json({
       message:
         "Test email sent successfully! Please check your email (and Spam folder).",
