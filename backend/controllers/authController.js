@@ -44,7 +44,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
 
   // 2. Prepare user data
-  const hashedPassword = await bcrypt.hash(password, 12);
+  const hashedPassword = await bcrypt.hash(password, 10); // 10 rounds = fast (~300ms) and secure
   const otp = generateOTP();
   const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -302,7 +302,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   const user = await User.findById(decoded.id);
   if (!user) return next(new AppError("User no longer exists.", 404));
 
-  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 rounds = fast (~300ms) and secure
   user.password = hashedPassword;
   user.otp = null;
   user.otpExpiry = null;

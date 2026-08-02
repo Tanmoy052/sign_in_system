@@ -128,7 +128,7 @@ const sendOTP = async (email, otp, subject = "Verify Your Account") => {
         <span style="font-size: 42px; font-weight: 800; letter-spacing: 12px; color: #111827; font-family: monospace;">${otp}</span>
       </div>
       
-      <p style="font-size: 14px; color: #ef4444; font-weight: 500;">Note: This code is valid for 5 minutes only.</p>
+      <p style="font-size: 14px; color: #ef4444; font-weight: 500;">Note: This code is valid for 10 minutes only.</p>
       <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">If you didn't request this code, you can safely ignore this email.</p>
     `,
   });
